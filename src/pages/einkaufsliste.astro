@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ShoppingList from '../components/ShoppingList';
+---
+
+<Layout title="Einkaufsliste – Meal Prep">
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-bold text-stone-900 mb-6">Einkaufsliste</h1>
+    <ShoppingList client:load />
+  </main>
+</Layout>

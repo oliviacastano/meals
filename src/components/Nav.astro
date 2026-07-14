@@ -1,0 +1,29 @@
+---
+const path = Astro.url.pathname;
+const links = [
+  { href: '/rezepte', label: 'Rezepte' },
+  { href: '/wochenplan', label: 'Meal Plan' },
+  { href: '/einkaufsliste', label: 'Einkaufsliste' },
+];
+function isActive(href: string) {
+  return path === href || path.startsWith(`${href}/`);
+}
+---
+
+<header class="bg-white/70 backdrop-blur border-b border-stone-200 sticky top-0 z-10">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="/" class="font-bold text-lg text-stone-900">🍽️ Meal Prep</a>
+    <nav class="flex gap-1">
+      {links.map((link) => (
+        <a
+          href={link.href}
+          class={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            isActive(link.href) ? 'bg-rose-200 text-rose-900' : 'text-stone-600 hover:bg-stone-100'
+          }`}
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</header>

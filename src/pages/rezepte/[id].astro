@@ -1,0 +1,95 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { recipes, type RecipeCategory } from '../../data/recipes';
+
+export function getStaticPaths() {
+  return recipes.map((r) => ({ params: { id: r.id }, props: { recipe: r } }));
+}
+
+const { recipe } = Astro.props;
+
+const categoryColors: Record<RecipeCategory, string> = {
+  Frühstück: 'bg-amber-100 text-amber-800',
+  Kochen: 'bg-rose-100 text-rose-800',
+  Backen: 'bg-orange-100 text-orange-800',
+};
+---
+
+<Layout title={`${recipe.name} – Meal Prep`}>
+  <main class="max-w-3xl mx-auto px-4 py-10 space-y-8">
+    <a href="/rezepte" class="text-sm text-rose-600 hover:underline">← Alle Rezepte</a>
+
+    <div>
+      <div class="text-5xl mb-3">{recipe.emoji}</div>
+      <h1 class="text-2xl font-bold text-stone-900">{recipe.name}</h1>
+      <span class={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-medium ${categoryColors[recipe.category]}`}>
+        {recipe.category}
+      </span>
+    </div>
+
+    {(recipe.calories || recipe.protein || recipe.carbs || recipe.fat) && (
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {recipe.calories && (
+          <div class="bg-white rounded-xl p-3 text-center shadow-sm">
+            <div class="text-xs text-stone-500">Kalorien</div>
+            <div class="font-semibold text-stone-900">{recipe.calories}</div>
+          </div>
+        )}
+        {recipe.protein && (
+          <div class="bg-white rounded-xl p-3 text-center shadow-sm">
+            <div class="text-xs text-stone-500">Protein</div>
+            <div class="font-semibold text-stone-900">{recipe.protein}</div>
+          </div>
+        )}
+        {recipe.carbs && (
+          <div class="bg-white rounded-xl p-3 text-center shadow-sm">
+            <div class="text-xs text-stone-500">Carbs</div>
+            <div class="font-semibold text-stone-900">{recipe.carbs}</div>
+          </div>
+        )}
+        {recipe.fat && (
+          <div class="bg-white rounded-xl p-3 text-center shadow-sm">
+            <div class="text-xs text-stone-500">Fett</div>
+            <div class="font-semibold text-stone-900">{recipe.fat}</div>
+          </div>
+        )}
+      </div>
+    )}
+
+    {recipe.ingredients.length > 0 && (
+      <section>
+        <h2 class="text-lg font-semibold text-stone-900 mb-3">Zutaten</h2>
+        <ul class="space-y-2">
+          {recipe.ingredients.map((ing) => (
+            <li class="flex items-center gap-2 bg-white rounded-lg px-3 py-2 shadow-sm">
+              <input type="checkbox" class="rounded" />
+              <span>{ing}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {recipe.instructions.length > 0 && (
+      <section>
+        <h2 class="text-lg font-semibold text-stone-900 mb-3">Zubereitung</h2>
+        <ol class="space-y-3 list-decimal list-inside">
+          {recipe.instructions.map((step) => (
+            <li class="bg-white rounded-lg px-3 py-2 shadow-sm">{step}</li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    {recipe.link && (
+      <a
+        href={recipe.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-block text-rose-600 hover:underline"
+      >
+        Externes Rezept ansehen →
+      </a>
+    )}
+  </main>
+</Layout>
