@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { recipes, type Recipe } from '../data/recipes';
+import type { Recipe } from '../data/recipes';
+import { getAllRecipes } from '../lib/recipeStore';
 import {
   WEEKDAYS,
   MEAL_TYPES,
@@ -53,6 +54,11 @@ export default function WeekPlanBoard() {
   const weekStartISO = useMemo(() => toISODate(weekStart), [weekStart]);
   const [plan, setPlan] = useState<WeekPlan>(() => emptyWeekPlan());
   const [openSlot, setOpenSlot] = useState<string | null>(null);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+
+  useEffect(() => {
+    setRecipes(getAllRecipes());
+  }, []);
 
   useEffect(() => {
     setPlan(loadWeekPlan(weekStartISO));

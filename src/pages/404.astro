@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import NotFoundOrRecipe from '../components/NotFoundOrRecipe';
+---
+
+<Layout title="Meal Prep">
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    <NotFoundOrRecipe client:only="react" />
+  </main>
+</Layout>

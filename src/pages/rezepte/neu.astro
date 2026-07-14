@@ -1,0 +1,11 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import RecipeForm from '../../components/RecipeForm';
+---
+
+<Layout title="Neues Rezept – Meal Prep">
+  <main class="max-w-2xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-bold text-stone-900 mb-6">Neues Rezept</h1>
+    <RecipeForm client:load />
+  </main>
+</Layout>

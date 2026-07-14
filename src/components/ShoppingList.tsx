@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { recipes } from '../data/recipes';
+import { getAllRecipes } from '../lib/recipeStore';
 import { WEEKDAYS, MEAL_TYPES, getMonday, toISODate, type Weekday, type MealType } from '../lib/week';
 
 type WeekPlan = Record<Weekday, Record<MealType, string | null>>;
@@ -33,6 +33,7 @@ function loadAutoIngredientNames(weekStartISO: string): string[] {
     }
     const names: string[] = [];
     const seen = new Set<string>();
+    const recipes = getAllRecipes();
     for (const id of recipeIds) {
       const recipe = recipes.find((r) => r.id === id);
       if (!recipe) continue;
