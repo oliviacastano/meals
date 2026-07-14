@@ -15,6 +15,7 @@ export interface Recipe {
   link: string | null;
   tags: string[];
   favorite: boolean;
+  image?: string | null;
 }
 
 export const recipes: Recipe[] = [

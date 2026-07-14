@@ -41,7 +41,15 @@ export default function RecipesOverview() {
                   href={`/rezepte/${r.id}`}
                   className="bg-white rounded-2xl shadow-sm p-5 hover:shadow-md transition-shadow block"
                 >
-                  <div className="text-3xl mb-2">{r.emoji}</div>
+                  {r.image ? (
+                    <img
+                      src={r.image}
+                      alt={r.name}
+                      className="w-full h-32 object-cover rounded-xl mb-2"
+                    />
+                  ) : (
+                    <div className="text-3xl mb-2">{r.emoji}</div>
+                  )}
                   <div className="font-semibold text-stone-900">{r.name}</div>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                     <span className={`px-2 py-1 rounded-full font-medium ${categoryColors[r.category]}`}>

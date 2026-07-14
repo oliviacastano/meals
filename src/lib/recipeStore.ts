@@ -1,6 +1,7 @@
 import { recipes as seedRecipes, type Recipe, type RecipeCategory } from '../data/recipes';
 
 const CUSTOM_KEY = 'custom-recipes';
+const IMAGE_KEY = 'recipe-images';
 
 function slugify(name: string): string {
   return name
@@ -25,12 +26,41 @@ function saveCustomRecipes(recipes: Recipe[]): void {
   localStorage.setItem(CUSTOM_KEY, JSON.stringify(recipes));
 }
 
+function getImageOverrides(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  try {
+    return JSON.parse(localStorage.getItem(IMAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+export function getRecipeImage(id: string): string | null {
+  return getImageOverrides()[id] ?? null;
+}
+
+export function setRecipeImage(id: string, image: string | null): void {
+  const overrides = getImageOverrides();
+  if (image) {
+    overrides[id] = image;
+  } else {
+    delete overrides[id];
+  }
+  localStorage.setItem(IMAGE_KEY, JSON.stringify(overrides));
+}
+
+function withImage(recipe: Recipe): Recipe {
+  const image = getImageOverrides()[recipe.id];
+  return image ? { ...recipe, image } : recipe;
+}
+
 export function getAllRecipes(): Recipe[] {
-  return [...seedRecipes, ...getCustomRecipes()];
+  return [...seedRecipes, ...getCustomRecipes()].map(withImage);
 }
 
 export function findRecipe(id: string): Recipe | undefined {
-  return getAllRecipes().find((r) => r.id === id);
+  const recipe = [...seedRecipes, ...getCustomRecipes()].find((r) => r.id === id);
+  return recipe ? withImage(recipe) : undefined;
 }
 
 export interface NewRecipeInput {
@@ -48,7 +78,7 @@ export interface NewRecipeInput {
   tags: string[];
 }
 
-export function addRecipe(input: NewRecipeInput): Recipe {
+export function addRecipe(input: NewRecipeInput, image?: string | null): Recipe {
   const existingIds = new Set(getAllRecipes().map((r) => r.id));
   let id = slugify(input.name);
   let suffix = 2;
@@ -61,5 +91,8 @@ export function addRecipe(input: NewRecipeInput): Recipe {
   const custom = getCustomRecipes();
   custom.push(recipe);
   saveCustomRecipes(custom);
-  return recipe;
+
+  if (image) setRecipeImage(id, image);
+
+  return withImage(recipe);
 }

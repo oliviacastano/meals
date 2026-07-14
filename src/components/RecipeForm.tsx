@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { RecipeCategory } from '../data/recipes';
 import { addRecipe } from '../lib/recipeStore';
+import { resizeImageFile } from '../lib/image';
 
 const CATEGORIES: RecipeCategory[] = ['Frühstück', 'Kochen', 'Backen'];
 
@@ -24,7 +25,23 @@ export default function RecipeForm() {
   const [fat, setFat] = useState('');
   const [link, setLink] = useState('');
   const [tags, setTags] = useState('');
+  const [image, setImage] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageChange(file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Bitte eine Bilddatei auswählen.');
+      return;
+    }
+    try {
+      setImage(await resizeImageFile(file));
+      setError('');
+    } catch {
+      setError('Bild konnte nicht verarbeitet werden.');
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,23 +49,26 @@ export default function RecipeForm() {
       setError('Bitte gib einen Namen ein.');
       return;
     }
-    const recipe = addRecipe({
-      name: name.trim(),
-      emoji: emoji.trim() || '🍽️',
-      category,
-      ingredients: linesToList(ingredients),
-      instructions: linesToList(instructions),
-      servings: servings ? Number(servings) : null,
-      calories: calories.trim() || null,
-      protein: protein.trim() || null,
-      carbs: carbs.trim() || null,
-      fat: fat.trim() || null,
-      link: link.trim() || null,
-      tags: tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean),
-    });
+    const recipe = addRecipe(
+      {
+        name: name.trim(),
+        emoji: emoji.trim() || '🍽️',
+        category,
+        ingredients: linesToList(ingredients),
+        instructions: linesToList(instructions),
+        servings: servings ? Number(servings) : null,
+        calories: calories.trim() || null,
+        protein: protein.trim() || null,
+        carbs: carbs.trim() || null,
+        fat: fat.trim() || null,
+        link: link.trim() || null,
+        tags: tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+      },
+      image,
+    );
     window.location.href = `/rezepte/${recipe.id}`;
   }
 
@@ -74,6 +94,38 @@ export default function RecipeForm() {
             className="w-full rounded-xl border border-stone-200 px-3 py-2"
             placeholder="z.B. Protein Porridge"
           />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-1">Foto</label>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => handleImageChange(e.target.files?.[0])}
+        />
+        <div className="flex items-center gap-3">
+          {image && (
+            <img src={image} alt="Vorschau" className="w-20 h-20 object-cover rounded-xl shadow-sm" />
+          )}
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            className="px-4 py-2 rounded-full bg-white shadow-sm text-stone-600 hover:bg-stone-100 text-sm"
+          >
+            {image ? 'Foto ändern' : '📷 Foto hinzufügen'}
+          </button>
+          {image && (
+            <button
+              type="button"
+              onClick={() => setImage(null)}
+              className="px-4 py-2 rounded-full bg-white shadow-sm text-stone-600 hover:bg-stone-100 text-sm"
+            >
+              Entfernen
+            </button>
+          )}
         </div>
       </div>
 
