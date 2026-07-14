@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Recipe, RecipeCategory } from '../data/recipes';
-import { getRecipeImage } from '../lib/recipeStore';
+import { deleteRecipe, findRecipe, setRecipeImage, updateRecipe, type RecipeEditableFields } from '../lib/recipeStore';
 import ImageUploader from './ImageUploader';
+import RecipeFieldsForm from './RecipeFieldsForm';
 
 const categoryColors: Record<RecipeCategory, string> = {
   Frühstück: 'bg-amber-100 text-amber-800',
@@ -9,12 +10,63 @@ const categoryColors: Record<RecipeCategory, string> = {
   Backen: 'bg-orange-100 text-orange-800',
 };
 
-export default function RecipeDetailView({ recipe }: { recipe: Recipe }) {
-  const [image, setImage] = useState<string | null>(recipe.image ?? null);
+export default function RecipeDetailView({ recipe: initialRecipe }: { recipe: Recipe }) {
+  const [recipe, setRecipe] = useState<Recipe>(initialRecipe);
+  const [image, setImage] = useState<string | null>(initialRecipe.image ?? null);
+  const [editing, setEditing] = useState(false);
+  const [deleted, setDeleted] = useState(false);
 
   useEffect(() => {
-    setImage(getRecipeImage(recipe.id) ?? recipe.image ?? null);
-  }, [recipe.id]);
+    const current = findRecipe(initialRecipe.id);
+    if (!current) {
+      setDeleted(true);
+      return;
+    }
+    setRecipe(current);
+    setImage(current.image ?? null);
+  }, [initialRecipe.id]);
+
+  function handleDelete() {
+    if (!confirm(`"${recipe.name}" wirklich löschen?`)) return;
+    deleteRecipe(recipe.id);
+    window.location.href = '/rezepte';
+  }
+
+  function handleSave(values: RecipeEditableFields, newImage: string | null) {
+    updateRecipe(recipe.id, values);
+    setRecipeImage(recipe.id, newImage);
+    setRecipe({ ...recipe, ...values, image: newImage ?? undefined });
+    setImage(newImage);
+    setEditing(false);
+  }
+
+  if (deleted) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-5xl mb-4">🗑️</div>
+        <h1 className="text-2xl font-bold text-stone-900 mb-2">Rezept wurde gelöscht</h1>
+        <a href="/rezepte" className="text-rose-600 hover:underline">
+          ← Zur Rezepte-Übersicht
+        </a>
+      </div>
+    );
+  }
+
+  if (editing) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-xl font-bold text-stone-900">Rezept bearbeiten</h1>
+        <RecipeFieldsForm
+          initialRecipe={recipe}
+          initialImage={image}
+          submitLabel="Speichern"
+          onCancel={() => setEditing(false)}
+          onDelete={handleDelete}
+          onSubmit={handleSave}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -38,8 +90,20 @@ export default function RecipeDetailView({ recipe }: { recipe: Recipe }) {
         >
           {recipe.category}
         </span>
-        <div className="mt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <ImageUploader recipeId={recipe.id} image={image} onChange={setImage} />
+          <button
+            onClick={() => setEditing(true)}
+            className="text-sm px-3 py-1.5 rounded-full bg-white shadow-sm hover:bg-stone-100 text-stone-600"
+          >
+            Bearbeiten
+          </button>
+          <button
+            onClick={handleDelete}
+            className="text-sm px-3 py-1.5 rounded-full bg-white shadow-sm hover:bg-rose-50 text-rose-600"
+          >
+            Löschen
+          </button>
         </div>
       </div>
 
